@@ -1,0 +1,65 @@
+# Build -> Test -> Deploy
+#
+# Every step below is a command you can also run yourself in the terminal.
+# GitHub just runs them for you, in order, on a fresh Linux machine.
+# If ANY step fails, the steps after it are skipped -- so broken code never deploys.
+
+name: Build, test, deploy
+
+on:
+  push:
+    branches: [main]   # every push to main: build, test, AND deploy
+  pull_request:        # every pull request: build and test only (no deploy)
+  workflow_dispatch:   # adds a "Run workflow" button on the Actions tab
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./astro-site
+    steps:
+      # 1. Get a copy of the repo onto the runner
+      - uses: actions/checkout@v7
+
+      # 2. Install Node (and cache downloaded packages between runs)
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+          cache: npm
+
+      # 3. Install exact versions from package-lock.json   (you: npm ci)
+      - run: npm ci
+
+      # 4. Build the site into dist/                      (you: npm run build)
+      - run: npm run build
+
+      # 5. Unit + component tests                          (you: npm test)
+      - run: npm test
+
+      # 6. End-to-end tests against the built site         (you: npm run e2e)
+      #    This action starts `npm run preview`, waits for it, then runs Cypress.
+      #- uses: cypress-io/github-action@v7
+      #  with:
+      #    install: false              # we already ran npm ci
+      #    start: npm run preview
+      #    wait-on: http://localhost:4321
+
+      # 7. Deploy with rsync over SSH                       (you: ./deploy.sh)
+      #    Only on a push to main -- never for pull requests.
+      #    The secrets are set in: repo Settings -> Secrets and variables -> Actions
+      #
+      #    This action runs the same command as deploy.sh:
+      #      rsync -avz --delete dist/ DEPLOY_USER@DEPLOY_HOST:DEPLOY_PATH/
+      #    Docs: https://github.com/marketplace/actions/rsync-deployments-action
+      - name: Deploy to shared hosting
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: burnett01/rsync-deployments@v9
+        with:
+          switches: -avz --delete
+          path: dist/                                  # trailing slash = contents of dist
+          remote_path: ${{ secrets.DEPLOY_PATH }}
+          remote_host: ${{ secrets.DEPLOY_HOST }}
+          remote_user: ${{ secrets.DEPLOY_USER }}
+          remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          
