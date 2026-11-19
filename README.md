@@ -96,6 +96,18 @@ The server address, username, path and SSH key are **secrets**, not stored in th
 They are set in the repo under **Settings → Secrets and variables → Actions**:
 `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_PATH`, `SSH_PRIVATE_KEY`.
 
+`DEPLOY_PATH` is the folder on the server that holds your website. It is usually named after the site's domain, for example:
+
+```text
+site.example.cs12.net
+```
+
+So the deploy step runs the equivalent of:
+
+```sh
+rsync -avz --delete dist/ DEPLOY_USER@DEPLOY_HOST:site.example.cs12.net/
+```
+
 > **Coming later:** end-to-end tests with [Cypress](https://www.cypress.io/), which click through the site in a real browser.
 > Cypress is already in `package.json`, and the workflow has a commented-out step ready for it.
 
