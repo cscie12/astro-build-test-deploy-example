@@ -1,16 +1,12 @@
 ---
+import Layout from '@/layouts/Layout.astro';
 ---
-
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout pageTitle="Home">
+<h1>Steps Involved</h1>
+<h2>Build</h2>
+<p>Build with <code>npm run build</code></p>
+<h2>Test</h2>
+<p>We'll test with vitest and cypress.</p>
+<h2>Deploy</h2>
+<p>We'll deploy to Dreamhost.</p>
+</Layout>
